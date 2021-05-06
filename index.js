@@ -9,10 +9,6 @@ module.exports = (app) => {
   // Your code here
   app.log.info("Yay, the app was loaded!");
 
-  app.onAny(async (context) => {
-    context.log.info({ event: context.name, action: context.payload.action });
-  });
-
   // app.on("pull_request", handlePullReq);
    /*
     1) Check the status of the PR - if its opened, then we add that particular record to the database
@@ -25,29 +21,15 @@ module.exports = (app) => {
   */
 
   app.on("pull_request.opened", async (context) => {
-    console.log('hook triggered');
-    console.log(context.payload.pull_request.title)
     if(context.payload.pull_request.title.toLowerCase().includes('haystack')){
-      console.log('in here')
       let label = "Haystack"
       let p = context.issue({
         labels : [label]
       })
-      context.octokit.issues.addLabels(p)
+      return context.octokit.issues.addLabels(p);
     }
-    const params = context.issue({ body: "Hello World!" });
-    let reqObj = {
-      prId : context.payload.pull_request.id,
-      prTitle: context.payload.pull_request.title,
-      prCreatedAt : context.payload.pull_request.created_at,
-      repositoryId : context.payload.repository.id
-    }
-    
-    await prService.createpr(reqObj).then((resp) => {
-      console.log(resp.data);
-    });
 
-    return context.octokit.issues.createComment(params);
+    return; 
   });
 
 
@@ -57,19 +39,16 @@ module.exports = (app) => {
     Depending on that we set a variable denoting that state. 
     Once we do that, we need to get the closed_at time and subtract it from the created_at time.
     then we can make the comment with the time
-    */
-    console.log('closed hook triggered');  
+    */  
     let end_time = Date.parse(context.payload.pull_request.closed_at)
     let start_time = Date.parse(context.payload.pull_request.created_at)
     let repId = Number(context.payload.repository.id);
     let prId = Number(context.payload.pull_request.id)
-    console.log(end_time);
-    console.log(start_time);
-    console.log(repId)
+
     let durationMs = end_time-start_time
     let minutes = Math.floor(durationMs/1000/60);
-    console.log(minutes);
     let closedType;
+
     if(context.payload.pull_request.merged === false){
         closedType = 'closed'
     }
@@ -85,6 +64,7 @@ module.exports = (app) => {
     Using that, we can then calculate the average PR size. 
     */
     const prSize = Number(context.payload.pull_request.additions) + Number(context.payload.pull_request.deletions)
+    
     let resObj = await sizesService.findPr({'prId': prId}).then((resp) =>{
       return resp.data;
     })
@@ -111,8 +91,6 @@ module.exports = (app) => {
     let totalSize = repObj.reduce((n, {size}) => n+size,0)
     let avgSize = totalSize/repObj.length;
 
-    console.log(avgSize);
-    console.log(prSize)
     percentDiff = Math.abs((prSize-avgSize)/avgSize)*100
     verbalDiff = (prSize > avgSize) ? 'more' : 'less'
     
@@ -121,11 +99,4 @@ module.exports = (app) => {
     return context.octokit.issues.createComment(params);
 
   });
-
- 
-  // For more information on building apps:
-  // https://probot.github.io/docs/
-
-  // To get your app running against GitHub, see:
-  // https://probot.github.io/docs/development/
 };
