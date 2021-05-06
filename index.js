@@ -3,7 +3,6 @@
  * @param {import('probot').Probot} app
  */
 
-let prService = require("./services/prService");
 let sizesService = require('./services/sizesService');
 module.exports = (app) => {
   // Your code here
