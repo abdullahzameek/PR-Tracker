@@ -1,0 +1,26 @@
+
+name: CI
+# Controls when the action will run. 
+on: pull_request
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: 'Comment PR'
+        uses: actions/github-script@0.3.0
+        if: github.event_name == 'pull_request'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
+            let randomTime = Math.random() * 10 + 10;
+            const randTime = async (randomTime) => {
+              await sleep(randomTime*1000)
+            }
+            github.issues.createComment({ issue_number, owner, repo, body: `The CI took ${randomTime.toFixed(1)} seconds` });
