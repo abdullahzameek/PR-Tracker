@@ -37,15 +37,15 @@ to the PR. This is done by examining the value of `context.payload.pull_request.
 
 3) When a PR is closed, multiple actions are performed.
 
-a) The time duration between opened and closed is calculated using the `closed_at` and `created_at` keys.
+    a) The time duration between opened and closed is calculated using the `closed_at` and `created_at` keys.
 
-b) If the `merged` property is set to true, we set the type of "closed" to be "merged".
+    b) If the `merged` property is set to true, we set the type of "closed" to be "merged".
 
-c) We calculate the PR size to be the sum of additions and deletions. 
+    c) We calculate the PR size to be the sum of additions and deletions. 
 
-d) We then interact with our Express App and MongoDB database. We look for that particular PR in the collection. If it doesnt exist, we add a new document to the collection with the `prId`, `repositoryId` and `size`. If it already exists, then we just update the size. Once the updates are done, we get all the PRs for that particular repository and calculate the average size. 
+4) We then interact with our Express App and MongoDB database. We look for that particular PR in the collection. If it doesnt exist, we add a new document to the collection with the `prId`, `repositoryId` and `size`. If it already exists, then we just update the size. Once the updates are done, we get all the PRs for that particular repository and calculate the average size. 
 
-e) Once all this is done, we build up the comment using the duration for closing, as well as the difference between average PR size and the size of the PR that we're trying to merge.
+5) Once all this is done, we build up the comment using the duration for closing, as well as the difference between average PR size and the size of the PR that we're trying to merge.
 
 ## Github Action.
 
