@@ -26,6 +26,8 @@ npm run dev
 
 https://www.loom.com/share/d8ffdc29a0744697a2a9808364c8d35f
 
+There's more examples of usage in the closed pull requests section in this repository.
+
 # Features
 
 ## Github App 
