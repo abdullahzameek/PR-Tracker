@@ -8,17 +8,10 @@ module.exports = (app) => {
   // Your code here
   app.log.info("Yay, the app was loaded!");
 
-  // app.on("pull_request", handlePullReq);
-   /*
-    1) Check the status of the PR - if its opened, then we add that particular record to the database
-    along with the id, created date, title, labels, and size (we'll prolly need to soemthing with the size later)
-    2) if the PR status is closed, then we take the id of that particular PR and then look up the PR in the database
-    by id. we get the created_at date adn then we can calculate the time taken from there.
-    3) Check the title of the PR for the word Haystack, if it contains it, then we add haystack to the list of labels.
-    4) the average PR size should be straightforward. When we close a PR, we will update the size in the db, along with 
-    a count and that will allow us to do the third part. 
+  /*
+  When a PR is opened, the main thing we're concerned about is whether it has 
+  Haystack in the title. If it does, then we add the label Haystack to it.
   */
-
   app.on("pull_request.opened", async (context) => {
     if(context.payload.pull_request.title.toLowerCase().includes('haystack')){
       let label = "Haystack"
@@ -31,14 +24,14 @@ module.exports = (app) => {
     return; 
   });
 
-
+  /*
+  When a PR is closed, we first need to check if it was closed or merged.
+  Depending on that we set a variable denoting that state. 
+  Once we do that, we need to get the closed_at time and subtract it from the created_at time.
+  then we can make the comment with the time
+  */  
   app.on("pull_request.closed", async (context) => {
-    /*
-    When a PR is closed, we first need to check if it was closed or merged.
-    Depending on that we set a variable denoting that state. 
-    Once we do that, we need to get the closed_at time and subtract it from the created_at time.
-    then we can make the comment with the time
-    */  
+
     let end_time = Date.parse(context.payload.pull_request.closed_at)
     let start_time = Date.parse(context.payload.pull_request.created_at)
     let repId = Number(context.payload.repository.id);
@@ -59,9 +52,10 @@ module.exports = (app) => {
     First, we check if the PR already exists in the collection. 
     if it does, then we update the size.
     if it doesnt, then we create a new entry.
-    once we do that, we get all the PRs for that repository. 
+    Once we do that, we get all the PRs for that repository. 
     Using that, we can then calculate the average PR size. 
     */
+
     const prSize = Number(context.payload.pull_request.additions) + Number(context.payload.pull_request.deletions)
     
     let resObj = await sizesService.findPr({'prId': prId}).then((resp) =>{
@@ -72,7 +66,7 @@ module.exports = (app) => {
       size : prSize,
       prId : prId
     }
-
+    //check if the obj is empty 
     if(Object.keys(resObj).length === 0){
       await sizesService.createSize(reqObj).then((resp) => {
         console.log(resp.data);
@@ -83,10 +77,11 @@ module.exports = (app) => {
         console.log(resp.data)
       })
     }
-
+    //get a list of objects that have the PRs for a particular repo
     let repObj = await sizesService.getSize({'repositoryId': repId}).then((resp) =>{
       return resp.data;
     })
+    //sum up the sizes, divide by length
     let totalSize = repObj.reduce((n, {size}) => n+size,0)
     let avgSize = totalSize/repObj.length;
 

@@ -1,17 +1,14 @@
 const router = require("express").Router();
 let Sizes = require("../models/sizes.model");
 
-router.route("/").get((req, res) => {
-  console.log("nothing to see here, move on");
-});
-
+//create an entry for a PR with its size
 router.route("/createSize").post((req, res) => {
   console.log(req.body);
 
   const repositoryId = req.body.repositoryId;
   const size = req.body.size
   const prId = req.body.prId
-  // const newArticle = new Article(body);
+
   const newSize = new Sizes({
     repositoryId,
     size,
@@ -29,6 +26,7 @@ router.route("/createSize").post((req, res) => {
     });
 });
 
+//update an existing PR's size
 router.route("/updateSize").post((req, res) => {
   Sizes.findOne({
     prId: req.body.prId,
@@ -45,6 +43,7 @@ router.route("/updateSize").post((req, res) => {
     .catch((err) => console.log("the err is ", err));
 });
 
+//get all the PR sizes for a particular repository
 router.route("/getSize").get((req, res) => {
     console.log(req.query)
     Sizes.find({
@@ -54,6 +53,7 @@ router.route("/getSize").get((req, res) => {
         .catch(err => res.status(400).json('Error: ' + err));
 })
 
+//find a particular PR by Id.
 router.route("/findPr").get((req, res) => {
     console.log(req.query)
     Sizes.find({
