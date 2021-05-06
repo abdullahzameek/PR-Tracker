@@ -16,10 +16,12 @@ npm install
 
 # Run the bot
 npm start
-```
 
 # Start the Express App (App has successfully launched if you see `MongoDB database connection established successfully`)
 npm run dev 
+```
+
+
 
 # Features
 
